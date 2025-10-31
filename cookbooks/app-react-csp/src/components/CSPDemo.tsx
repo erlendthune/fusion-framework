@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 
 export const CSPDemo = () => {
-  const [logs, setLogs] = useState<string[]>(['CSP violations will appear here...']);
+  const [logs, setLogs] = useState<string[]>(['Failures will appear here...']);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
   const logMessage = (message: string) => {
@@ -141,8 +141,8 @@ export const CSPDemo = () => {
         </div>
 
         <div style={styles.section}>
-          <h2 style={styles.h2}>Violation Log</h2>
-          <div style={styles.violationLog}>
+          <h2 style={styles.h2}>Failure Log</h2>
+          <div style={styles.failureLog}>
             {logs.map((log, logIndex) => (
               <div key={`log-${logIndex}-${log.substring(0, 20)}`} style={styles.logEntry}>
                 {log}
@@ -189,7 +189,7 @@ const styles = {
   },
   section: {
     marginBottom: '0px',
-    padding: '0px',
+    padding: '20px',
     background: '#fafafa',
     borderRadius: '5px',
     border: '1px solid #eee',
@@ -222,7 +222,7 @@ const styles = {
     marginBottom: '15px',
     color: '#555',
   },
-  violationLog: {
+  failureLog: {
     maxHeight: '300px',
     overflowY: 'auto' as const,
     border: '1px solid #ddd',

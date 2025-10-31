@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button, Icon, Popover, Typography, List } from '@equinor/eds-core-react';
 import { security, clear } from '@equinor/eds-icons';
 import { useCSPViolations } from '../hooks/useCSPViolations';
@@ -16,26 +16,13 @@ export function CSPNotificationComponent() {
   const [isOpen, setIsOpen] = useState(false);
   const anchorRef = React.useRef<HTMLButtonElement>(null);
 
-  // Format violation for display
-  const formatViolation = (violation: CSPViolation) => {
-    const time = new Date(violation.timestamp).toLocaleTimeString();
-    return {
-      primary: `${violation.violatedDirective} violation`,
-      secondary: `${violation.blockedURI} at ${time}`,
-      details: violation,
-    };
-  };
+  // Memoize the displayed violations to prevent unnecessary re-renders
+  const displayedViolations = useMemo(() => {
+    return violations.slice(-10).reverse();
+  }, [violations]);
 
-  // Get button variant based on violations
-  const getButtonVariant = () => {
-    if (violationCount > 0) {
-      return 'ghost_icon' as const;
-    }
-    return 'ghost_icon' as const;
-  };
-
-  // Get button color based on violations
-  const getButtonColor = () => {
+  // Memoize button color to prevent style recalculations
+  const buttonColor = useMemo(() => {
     if (violationCount > 0) {
       return '#EB0000'; // Red for violations
     }
@@ -43,6 +30,27 @@ export function CSPNotificationComponent() {
       return '#007079'; // Teal for active monitoring
     }
     return '#6F6F6F'; // Gray for inactive
+  }, [violationCount, isActive]);
+
+  // Format violation for display with URL truncation
+  const formatViolation = (violation: CSPViolation) => {
+    const time = new Date(violation.timestamp).toLocaleTimeString();
+    // Truncate long URLs to prevent layout shifts
+    const truncatedURI =
+      violation.blockedURI.length > 60
+        ? `${violation.blockedURI.substring(0, 60)}...`
+        : violation.blockedURI;
+
+    return {
+      primary: `${violation.violatedDirective} violation`,
+      secondary: `${truncatedURI} at ${time}`,
+      details: violation,
+    };
+  };
+
+  // Get button variant based on violations
+  const getButtonVariant = () => {
+    return 'ghost_icon' as const;
   };
 
   const handleToggleOpen = () => {
@@ -67,7 +75,7 @@ export function CSPNotificationComponent() {
         onClick={handleToggleOpen}
         style={{
           position: 'relative',
-          color: getButtonColor(),
+          color: buttonColor,
         }}
         title={`CSP Monitor ${isActive ? 'Active' : 'Inactive'} - ${violationCount} violations`}
       >
@@ -147,41 +155,59 @@ export function CSPNotificationComponent() {
           ) : (
             <div style={{ maxHeight: 250, overflowY: 'auto' }}>
               <List>
-                {violations
-                  .slice(-10)
-                  .reverse()
-                  .map((violation, index) => {
-                    const formatted = formatViolation(violation);
-                    return (
-                      <List.Item key={`${violation.timestamp}-${violation.blockedURI}-${index}`}>
-                        <div>
-                          <Typography variant="body_short" style={{ fontWeight: 'bold' }}>
-                            {formatted.primary}
+                {displayedViolations.map((violation, index) => {
+                  const formatted = formatViolation(violation);
+                  // Create a stable key that doesn't include special characters
+                  const stableKey = `violation-${violation.timestamp}-${index}`;
+                  return (
+                    <List.Item key={stableKey}>
+                      <div style={{ width: '100%', minHeight: '60px' }}>
+                        <Typography
+                          variant="body_short"
+                          style={{
+                            fontWeight: 'bold',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            width: '100%',
+                          }}
+                        >
+                          {formatted.primary}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="secondary"
+                          style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            width: '100%',
+                            display: 'block',
+                          }}
+                        >
+                          {formatted.secondary}
+                        </Typography>
+                        {violation.sample && (
+                          <Typography
+                            variant="caption"
+                            style={{
+                              display: 'block',
+                              fontFamily: 'monospace',
+                              backgroundColor: '#f7f7f7',
+                              padding: '2px 4px',
+                              borderRadius: 2,
+                              marginTop: 4,
+                            }}
+                          >
+                            {violation.sample.length > 50
+                              ? `${violation.sample.substring(0, 50)}...`
+                              : violation.sample}
                           </Typography>
-                          <Typography variant="caption" color="secondary">
-                            {formatted.secondary}
-                          </Typography>
-                          {violation.sample && (
-                            <Typography
-                              variant="caption"
-                              style={{
-                                display: 'block',
-                                fontFamily: 'monospace',
-                                backgroundColor: '#f7f7f7',
-                                padding: '2px 4px',
-                                borderRadius: 2,
-                                marginTop: 4,
-                              }}
-                            >
-                              {violation.sample.length > 50
-                                ? `${violation.sample.substring(0, 50)}...`
-                                : violation.sample}
-                            </Typography>
-                          )}
-                        </div>
-                      </List.Item>
-                    );
-                  })}
+                        )}
+                      </div>
+                    </List.Item>
+                  );
+                })}
               </List>
               {violations.length > 10 && (
                 <Typography
