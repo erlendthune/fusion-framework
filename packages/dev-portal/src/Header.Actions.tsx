@@ -32,9 +32,6 @@ export const HeaderActions = (props: HeaderActionProps) => {
       <Button onClick={() => togglePerson((x) => !x)} variant="ghost_icon">
         <fwc-person-avatar size="small" azureId={userAzureId} clickable={false} />
       </Button>
-
-      {/* Notification container for CSP test notifications */}
-      <div id="notification-container"></div>
     </TopBar.Actions>
   );
 };
