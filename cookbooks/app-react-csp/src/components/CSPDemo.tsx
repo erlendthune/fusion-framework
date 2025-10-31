@@ -1,8 +1,20 @@
 import { useState, useRef } from 'react';
 
 export const CSPDemo = () => {
-  const [logs, setLogs] = useState<string[]>(['Failures will appear here...']);
+  const [logs, setLogs] = useState<string[]>(['Log messages will appear here...']);
   const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // URL inputs state with default values
+  const [scriptUrl, setScriptUrl] = useState(
+    'https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js',
+  );
+  const [imageUrl, setImageUrl] = useState(
+    'https://via.placeholder.com/200x100/ff0000/ffffff?text=External+Image',
+  );
+  const [cssUrl, setCssUrl] = useState(
+    'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap',
+  );
+  const [fetchUrl, setFetchUrl] = useState('https://jsonplaceholder.typicode.com/posts/1');
 
   const logMessage = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -11,19 +23,22 @@ export const CSPDemo = () => {
   };
 
   const loadExternalScript = () => {
-    logMessage('Attempting to load external script...');
+    logMessage(`Attempting to load external script: ${scriptUrl}`);
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js';
+    script.src = scriptUrl;
     script.onerror = () => {
       logMessage('Failed to load external script (blocked by CSP?)');
+    };
+    script.onload = () => {
+      logMessage('External script loaded successfully');
     };
     document.head.appendChild(script);
   };
 
   const loadExternalImage = () => {
-    logMessage('Attempting to load external image...');
+    logMessage(`Attempting to load external image: ${imageUrl}`);
     const img = document.createElement('img');
-    img.src = 'https://via.placeholder.com/200x100/ff0000/ffffff?text=External+Image';
+    img.src = imageUrl;
     img.alt = 'External test image';
     img.onerror = () => {
       logMessage('Failed to load external image (blocked by CSP?)');
@@ -37,19 +52,22 @@ export const CSPDemo = () => {
   };
 
   const loadExternalCSS = () => {
-    logMessage('Attempting to load external CSS...');
+    logMessage(`Attempting to load external CSS: ${cssUrl}`);
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap';
+    link.href = cssUrl;
     link.onerror = () => {
       logMessage('Failed to load external CSS (blocked by CSP?)');
+    };
+    link.onload = () => {
+      logMessage('External CSS loaded successfully');
     };
     document.head.appendChild(link);
   };
 
   const makeExternalRequest = () => {
-    logMessage('Attempting to make external fetch request...');
-    fetch('https://jsonplaceholder.typicode.com/posts/1')
+    logMessage(`Attempting to make external fetch request: ${fetchUrl}`);
+    fetch(fetchUrl)
       .then((response) => {
         if (response.ok) {
           logMessage('External request successful');
@@ -65,39 +83,6 @@ export const CSPDemo = () => {
       });
   };
 
-  const loadEquinorImage = () => {
-    logMessage('Attempting to load image from Equinor CDN...');
-    const img = document.createElement('img');
-    img.src =
-      'https://cdn.equinor.com/images/h61q9gi9/global/cb8f3a7e979835e9d667ba9c04d5536efeedf7ad-11377x8083.jpg?rect=0,2333,11377,3418&w=2560&h=769&q=100&auto=format';
-    img.alt = 'Equinor image from CDN';
-    img.style.maxWidth = '100%';
-    img.style.height = 'auto';
-    img.onerror = () => {
-      logMessage('Equinor image failed to load (blocked by CSP or network error)');
-    };
-    img.onload = () => {
-      logMessage('Equinor image loaded successfully - CSP allows *.equinor.com');
-    };
-    if (imageContainerRef.current) {
-      imageContainerRef.current.appendChild(img);
-    }
-  };
-
-  const loadDataURLImage = () => {
-    logMessage('Loading data URL image (should be allowed)...');
-    const img = document.createElement('img');
-    img.src =
-      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzRDQUY1MCIvPgogIDx0ZXh0IHg9IjEwMCIgeT0iNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPkRhdGEgVVJMIEltYWdlPC90ZXh0Pgo8L3N2Zz4K';
-    img.alt = 'Data URL test image';
-    img.onload = () => {
-      logMessage('Data URL image loaded successfully');
-    };
-    if (imageContainerRef.current) {
-      imageContainerRef.current.appendChild(img);
-    }
-  };
-
   return (
     <div style={styles.body}>
       <div style={styles.container}>
@@ -105,32 +90,85 @@ export const CSPDemo = () => {
 
         <div style={styles.section}>
           <h2 style={styles.h2}>Test CSP Violations</h2>
-          <p style={styles.p}>Click these buttons to trigger different CSP violations:</p>
+          <p style={styles.p}>
+            Enter your own URLs and click the buttons to test different CSP scenarios:
+          </p>
 
-          <button type="button" style={styles.button} onClick={loadExternalScript}>
-            Load External Script
-          </button>
-          <button type="button" style={styles.button} onClick={loadExternalImage}>
-            Load External Image
-          </button>
-          <button type="button" style={styles.button} onClick={loadExternalCSS}>
-            Load External CSS
-          </button>
-          <button type="button" style={styles.button} onClick={makeExternalRequest}>
-            Make External Request
-          </button>
-        </div>
+          <div style={styles.inputGroup}>
+            <label htmlFor="scriptUrl" style={styles.label}>
+              Script URL:
+            </label>
+            <div style={styles.inputWithButton}>
+              <input
+                id="scriptUrl"
+                type="url"
+                value={scriptUrl}
+                onChange={(e) => setScriptUrl(e.target.value)}
+                style={styles.input}
+                placeholder="Enter script URL to test"
+              />
+              <button type="button" style={styles.button} onClick={loadExternalScript}>
+                Load Script
+              </button>
+            </div>
+          </div>
 
-        <div style={styles.section}>
-          <h2 style={styles.h2}>Test Allowed Sources</h2>
-          <p style={styles.p}>These sources should be allowed by our CSP policy:</p>
+          <div style={styles.inputGroup}>
+            <label htmlFor="imageUrl" style={styles.label}>
+              Image URL:
+            </label>
+            <div style={styles.inputWithButton}>
+              <input
+                id="imageUrl"
+                type="url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                style={styles.input}
+                placeholder="Enter image URL to test"
+              />
+              <button type="button" style={styles.button} onClick={loadExternalImage}>
+                Load Image
+              </button>
+            </div>
+          </div>
 
-          <button type="button" style={styles.button} onClick={loadEquinorImage}>
-            Load Image from Equinor CDN
-          </button>
-          <button type="button" style={styles.button} onClick={loadDataURLImage}>
-            Load Data URL Image
-          </button>
+          <div style={styles.inputGroup}>
+            <label htmlFor="cssUrl" style={styles.label}>
+              CSS URL:
+            </label>
+            <div style={styles.inputWithButton}>
+              <input
+                id="cssUrl"
+                type="url"
+                value={cssUrl}
+                onChange={(e) => setCssUrl(e.target.value)}
+                style={styles.input}
+                placeholder="Enter CSS URL to test"
+              />
+              <button type="button" style={styles.button} onClick={loadExternalCSS}>
+                Load CSS
+              </button>
+            </div>
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label htmlFor="fetchUrl" style={styles.label}>
+              Fetch URL:
+            </label>
+            <div style={styles.inputWithButton}>
+              <input
+                id="fetchUrl"
+                type="url"
+                value={fetchUrl}
+                onChange={(e) => setFetchUrl(e.target.value)}
+                style={styles.input}
+                placeholder="Enter API URL to test"
+              />
+              <button type="button" style={styles.button} onClick={makeExternalRequest}>
+                Make Request
+              </button>
+            </div>
+          </div>
         </div>
 
         <div style={styles.section}>
@@ -141,8 +179,8 @@ export const CSPDemo = () => {
         </div>
 
         <div style={styles.section}>
-          <h2 style={styles.h2}>Failure Log</h2>
-          <div style={styles.failureLog}>
+          <h2 style={styles.h2}>Log</h2>
+          <div style={styles.log}>
             {logs.map((log, logIndex) => (
               <div key={`log-${logIndex}-${log.substring(0, 20)}`} style={styles.logEntry}>
                 {log}
@@ -222,7 +260,7 @@ const styles = {
     marginBottom: '15px',
     color: '#555',
   },
-  failureLog: {
+  log: {
     maxHeight: '300px',
     overflowY: 'auto' as const,
     border: '1px solid #ddd',
@@ -235,5 +273,30 @@ const styles = {
   logEntry: {
     marginBottom: '5px',
     padding: '2px',
+  },
+  inputGroup: {
+    marginBottom: '15px',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '5px',
+  },
+  label: {
+    fontWeight: 'bold',
+    color: '#34495e',
+    fontSize: '14px',
+  },
+  input: {
+    padding: '8px 12px',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    fontSize: '14px',
+    fontFamily: 'inherit',
+    flex: 1,
+    boxSizing: 'border-box' as const,
+  },
+  inputWithButton: {
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'center',
   },
 };
