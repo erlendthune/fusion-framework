@@ -1,11 +1,11 @@
-import { tag, notifications } from '@equinor/eds-icons';
-import { Button, Icon, TopBar, Badge } from '@equinor/eds-core-react';
-import { useState, useEffect } from 'react';
+import { tag } from '@equinor/eds-icons';
+import { Button, Icon, TopBar } from '@equinor/eds-core-react';
 
 import PersonAvatarElement from '@equinor/fusion-wc-person/avatar';
 PersonAvatarElement;
 
 import { useBookmarkComponentContext } from '@equinor/fusion-framework-react-components-bookmark';
+import { CSPNotificationComponent } from './components/CSPNotificationComponent';
 
 interface HeaderActionProps {
   readonly userAzureId?: string;
@@ -13,17 +13,8 @@ interface HeaderActionProps {
   readonly togglePerson: (open: (status: boolean) => boolean) => void;
 }
 
-interface NotificationData {
-  id: string;
-  message: string;
-  type: 'info' | 'success' | 'warning' | 'error';
-  timestamp: number;
-}
-
 export const HeaderActions = (props: HeaderActionProps) => {
   const { toggleBookmark, togglePerson, userAzureId } = props;
-  const [notifications, setNotifications] = useState<NotificationData[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
 
   const bookmarkContext = useBookmarkComponentContext();
 
@@ -37,9 +28,13 @@ export const HeaderActions = (props: HeaderActionProps) => {
       >
         <Icon data={tag} />
       </Button>
+      <CSPNotificationComponent />
       <Button onClick={() => togglePerson((x) => !x)} variant="ghost_icon">
         <fwc-person-avatar size="small" azureId={userAzureId} clickable={false} />
       </Button>
+
+      {/* Notification container for CSP test notifications */}
+      <div id="notification-container"></div>
     </TopBar.Actions>
   );
 };

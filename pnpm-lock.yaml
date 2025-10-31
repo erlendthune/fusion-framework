@@ -67,6 +67,18 @@ importers:
         specifier: ^5.8.2
         version: 5.9.3
 
+  cookbooks/app-csp-monitor:
+    devDependencies:
+      '@equinor/fusion-framework-app':
+        specifier: workspace:^
+        version: link:../../packages/app
+      '@equinor/fusion-framework-cli':
+        specifier: workspace:^
+        version: link:../../packages/cli
+      typescript:
+        specifier: ^5.8.2
+        version: 5.9.3
+
   cookbooks/app-react:
     devDependencies:
       '@equinor/fusion-framework-cli':
@@ -367,6 +379,30 @@ importers:
       rxjs:
         specifier: ^7.8.1
         version: 7.8.2
+      typescript:
+        specifier: ^5.8.2
+        version: 5.9.3
+
+  cookbooks/app-react-csp:
+    devDependencies:
+      '@equinor/fusion-framework-cli':
+        specifier: workspace:^
+        version: link:../../packages/cli
+      '@equinor/fusion-framework-react-app':
+        specifier: workspace:^
+        version: link:../../packages/react/app
+      '@types/react':
+        specifier: ^18.2.50
+        version: 18.3.24
+      '@types/react-dom':
+        specifier: ^18.2.7
+        version: 18.3.0
+      react:
+        specifier: ^18.2.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.3.1(react@18.3.1)
       typescript:
         specifier: ^5.8.2
         version: 5.9.3

@@ -1,39 +1,10 @@
-// CSP Violation Detection Demo JavaScript
-
-// Global violation counter
-let violationCount = 0;
-
-// Initialize the demo when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('CSP Demo initialized');
-    setupCSPViolationListener();
-    logMessage('Demo ready - click buttons to test CSP violations');
-});
-
-// Set up CSP violation listener
-function setupCSPViolationListener() {
-    document.addEventListener('securitypolicyviolation', function(e) {
-        violationCount++;
-        const violation = {
-            type: e.violatedDirective,
-            blocked: e.blockedURI,
-            source: e.sourceFile,
-            line: e.lineNumber,
-            timestamp: new Date().toISOString()
-        };
-        
-        logViolation(violation);
-        showNotification(`CSP Violation #${violationCount}: ${e.violatedDirective}`, 'error');
-    });
-}
-
 // Test functions for CSP violations
 function loadExternalScript() {
     logMessage('Attempting to load external script...');
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js';
     script.onerror = function() {
-        logMessage('External script blocked by CSP');
+        logMessage('Failed to load external script (blocked by CSP?)');
     };
     document.head.appendChild(script);
 }
@@ -44,7 +15,7 @@ function loadExternalImage() {
     img.src = 'https://via.placeholder.com/200x100/ff0000/ffffff?text=External+Image';
     img.alt = 'External test image';
     img.onerror = function() {
-        logMessage('External image blocked by CSP');
+        logMessage('Failed to load external image (blocked by CSP?)');
     };
     img.onload = function() {
         logMessage('External image loaded successfully');
@@ -58,7 +29,7 @@ function loadExternalCSS() {
     link.rel = 'stylesheet';
     link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap';
     link.onerror = function() {
-        logMessage('External CSS blocked by CSP');
+        logMessage('Failed to load external CSS (blocked by CSP?)');
     };
     document.head.appendChild(link);
 }
@@ -105,28 +76,6 @@ function logMessage(message) {
     logEntry.innerHTML = `[${timestamp}] ${message}`;
     logContainer.appendChild(logEntry);
     logContainer.scrollTop = logContainer.scrollHeight;
-}
-
-function logViolation(violation) {
-    const message = `CSP VIOLATION: ${violation.type} - Blocked: ${violation.blocked}`;
-    logMessage(message);
-    console.warn('CSP Violation:', violation);
-}
-
-function showNotification(message, type = 'info') {
-    const container = document.getElementById('notification-container');
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    
-    container.appendChild(notification);
-    
-    // Auto-remove notification after 5 seconds
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
-    }, 5000);
 }
 
 // Test data URL image (should work with CSP)
