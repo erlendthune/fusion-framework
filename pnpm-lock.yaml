@@ -55,6 +55,18 @@ importers:
         specifier: ^0.11.1
         version: 0.11.1(vitest@3.2.4(@types/debug@4.1.12)(@types/node@24.6.2)(happy-dom@20.0.10)(msw@2.11.6(@types/node@24.6.2)(typescript@5.9.3))(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(tsx@4.20.6))
 
+  cookbooks/app-csp:
+    devDependencies:
+      '@equinor/fusion-framework-app':
+        specifier: workspace:^
+        version: link:../../packages/app
+      '@equinor/fusion-framework-cli':
+        specifier: workspace:^
+        version: link:../../packages/cli
+      typescript:
+        specifier: ^5.8.2
+        version: 5.9.3
+
   cookbooks/app-react:
     devDependencies:
       '@equinor/fusion-framework-cli':
