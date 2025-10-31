@@ -10,6 +10,9 @@ import type { DevServerOptions } from './types.js';
  * @returns A promise that resolves to the created development server instance.
  */
 export const createDevServer = async (options: DevServerOptions, overrides?: UserConfig) => {
+  console.log('🚀 createDevServer called with options:', JSON.stringify(options, null, 2));
+  console.trace('createDevServer call stack');
+
   const config = createDevServerConfig(options, overrides);
   const server = await createServer(config);
   return server;
