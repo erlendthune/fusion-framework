@@ -1,5 +1,6 @@
-import { tag } from '@equinor/eds-icons';
-import { Button, Icon, TopBar } from '@equinor/eds-core-react';
+import { tag, notifications } from '@equinor/eds-icons';
+import { Button, Icon, TopBar, Badge } from '@equinor/eds-core-react';
+import { useState, useEffect } from 'react';
 
 import PersonAvatarElement from '@equinor/fusion-wc-person/avatar';
 PersonAvatarElement;
@@ -12,8 +13,17 @@ interface HeaderActionProps {
   readonly togglePerson: (open: (status: boolean) => boolean) => void;
 }
 
+interface NotificationData {
+  id: string;
+  message: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  timestamp: number;
+}
+
 export const HeaderActions = (props: HeaderActionProps) => {
   const { toggleBookmark, togglePerson, userAzureId } = props;
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   const bookmarkContext = useBookmarkComponentContext();
 

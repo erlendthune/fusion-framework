@@ -83,7 +83,7 @@ export const createDevServerConfig = <TEnv extends Partial<TemplateEnv>>(
           "default-src 'self'",
           "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Vite needs unsafe-eval for HMR
           "style-src 'self' 'unsafe-inline'", // Allow inline styles
-          "img-src 'self' data: blob:",
+          "img-src 'self' data: blob: https://*.equinor.com",
           "font-src 'self'",
           "connect-src 'self' ws: wss: https://login.microsoftonline.com https://*.microsoftonline.com https://discovery.fusion.equinor.com https://*.equinor.com", // WebSocket for HMR + Microsoft auth + Fusion services
           "frame-src 'self' https://login.microsoftonline.com https://*.microsoftonline.com", // Allow Microsoft auth in iframes

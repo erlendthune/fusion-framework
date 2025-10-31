@@ -1,5 +1,26 @@
 import { configureModules, type AppRenderFn } from '@equinor/fusion-framework-app';
 
+// Import the static assets
+import htmlTemplate from './templates/app.html?raw';
+import cssStyles from './styles/app.css?raw';
+import appScript from './scripts/app.js?raw';
+
+// Type definitions
+interface FusionModules {
+  auth?: {
+    defaultAccount?: unknown;
+    hasValidAccessToken?: boolean;
+  };
+}
+
+interface CSPTestAppConstructor {
+  new (modules: FusionModules | null): unknown;
+}
+
+interface WindowWithCSPTestApp extends Window {
+  CSPTestApp?: CSPTestAppConstructor;
+}
+
 /**
  * This callback is executed during the configuration phase of the application.
  * It allows for custom configuration logic to be applied based on the environment.
@@ -32,23 +53,88 @@ const init = configureModules((configurator, env) => {
 });
 
 /**
+ * Loads and injects CSS styles into the document head
+ */
+function loadStyles(): void {
+  const styleElement = document.createElement('style');
+  styleElement.textContent = cssStyles;
+  styleElement.id = 'app-csp-styles';
+  document.head.appendChild(styleElement);
+}
+
+/**
+ * Loads and executes the application JavaScript
+ */
+function loadScript(modules: FusionModules | null): void {
+  try {
+    // Create a script element and inject our JavaScript
+    const scriptElement = document.createElement('script');
+    scriptElement.textContent = appScript;
+    scriptElement.id = 'app-csp-script';
+    document.head.appendChild(scriptElement);
+
+    // Initialize the CSP Test App if the class is available
+    const windowWithApp = window as WindowWithCSPTestApp;
+    if (windowWithApp.CSPTestApp) {
+      new windowWithApp.CSPTestApp(modules);
+    }
+  } catch (error) {
+    console.error('Failed to load application script:', error);
+  }
+}
+
+/**
  * Initializes and renders the application within a given HTML element.
  *
  * @param el - The HTML element where the application will be rendered.
  * @param args - Initialization arguments for the application modules.
  */
 export const renderApp: AppRenderFn = (el, args) => {
-  const myApp = document.createElement('pre');
+  // Load CSS styles first
+  loadStyles();
+
+  // Create the main application container
+  const appContainer = document.createElement('div');
+  appContainer.innerHTML = htmlTemplate;
+  appContainer.id = 'fusion-csp-app';
+
+  // Clear the target element and append our app
+  el.innerHTML = '';
+  el.appendChild(appContainer);
+
+  // Initialize the Fusion modules
   init(args)
     .then((modules) => {
-      // Display the default account information from the auth module
-      myApp.innerText = JSON.stringify(modules.auth.defaultAccount, null, 2);
+      console.log('Fusion modules initialized successfully');
+
+      // Load and execute the application script with access to modules
+      loadScript(modules as FusionModules);
+
+      // Update auth display if available
+      const authDetailsElement = document.getElementById('auth-details');
+      if (authDetailsElement && modules?.auth) {
+        try {
+          const authInfo = {
+            defaultAccount: modules.auth.defaultAccount,
+            isAuthenticated: !!modules.auth.defaultAccount,
+            timestamp: new Date().toISOString(),
+          };
+          authDetailsElement.textContent = JSON.stringify(authInfo, null, 2);
+        } catch (error) {
+          authDetailsElement.textContent = `Error displaying auth info: ${error}`;
+        }
+      }
     })
     .catch((error) => {
-      // Display any errors that occurred during initialization
-      myApp.innerText = JSON.stringify(error, null, 2);
+      console.error('Failed to initialize Fusion modules:', error);
+
+      // Display error in the auth section
+      const authDetailsElement = document.getElementById('auth-details');
+      if (authDetailsElement) {
+        authDetailsElement.textContent = `Initialization Error: ${JSON.stringify(error, null, 2)}`;
+      }
+
+      // Still load the script for CSP testing even if auth fails
+      loadScript(null);
     });
-  // Indicate that the application is loading until the modules are initialized
-  myApp.innerText = 'loading...';
-  el.appendChild(myApp);
 };
