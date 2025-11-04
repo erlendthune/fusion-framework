@@ -49,6 +49,11 @@ class CSPViolationService {
   private isListening = false;
   private logger?: Logger;
 
+  // Add protection against recursive violations
+  private isHandlingViolation = false;
+  private lastViolationTime = 0;
+  private violationThrottle = 100; // ms between handling violations
+
   private constructor() {}
 
   /**
@@ -100,32 +105,71 @@ class CSPViolationService {
    * Handle CSP violation events
    */
   private handleViolation = (event: SecurityPolicyViolationEvent): void => {
-    const violation: CSPViolation = {
-      violatedDirective: event.violatedDirective,
-      originalPolicy: event.originalPolicy,
-      blockedURI: event.blockedURI,
-      documentURI: event.documentURI,
-      lineNumber: event.lineNumber,
-      columnNumber: event.columnNumber,
-      timestamp: Date.now(),
-      sourceFile: event.sourceFile || '',
-      sample: event.sample || '',
-      disposition: event.disposition,
-    };
+    const now = Date.now();
 
-    this.logger?.warn('CSP Violation detected:', violation);
+    // Throttle violations to prevent recursive loops
+    if (this.isHandlingViolation || now - this.lastViolationTime < this.violationThrottle) {
+      return;
+    }
 
-    // Store the violation
-    this.violations.push(violation);
+    this.isHandlingViolation = true;
+    this.lastViolationTime = now;
 
-    // Notify all handlers
-    this.handlers.forEach((handler) => {
-      try {
-        handler(violation);
-      } catch (error) {
-        this.logger?.error('Error in CSP violation handler:', error);
+    try {
+      const violation: CSPViolation = {
+        violatedDirective: event.violatedDirective,
+        originalPolicy: event.originalPolicy,
+        blockedURI: event.blockedURI,
+        documentURI: event.documentURI,
+        lineNumber: event.lineNumber,
+        columnNumber: event.columnNumber,
+        timestamp: now,
+        sourceFile: event.sourceFile || '',
+        sample: event.sample || '',
+        disposition: event.disposition,
+      };
+
+      // Use a more conservative logging approach to avoid triggering more violations
+      if (this.logger && typeof this.logger.warn === 'function') {
+        // Defer logging to avoid immediate recursion
+        setTimeout(() => {
+          this.logger?.warn('CSP Violation detected:', violation);
+        }, 0);
       }
-    });
+
+      // Store the violation
+      this.violations.push(violation);
+
+      // Update CSP button if the update function is available
+      const updateButton = (window as { updateCSPButton?: () => void }).updateCSPButton;
+      if (updateButton && typeof updateButton === 'function') {
+        setTimeout(() => {
+          try {
+            updateButton();
+          } catch (error) {
+            console.error('Error updating CSP button:', error);
+          }
+        }, 50);
+      }
+
+      // Notify all handlers with error protection
+      this.handlers.forEach((handler) => {
+        try {
+          // Defer handler execution to prevent immediate recursion
+          setTimeout(() => {
+            handler(violation);
+          }, 0);
+        } catch (error) {
+          // Avoid logging errors that might cause more violations
+          console.error('Error in CSP violation handler:', error);
+        }
+      });
+    } finally {
+      // Reset the handling flag after a short delay
+      setTimeout(() => {
+        this.isHandlingViolation = false;
+      }, this.violationThrottle);
+    }
   };
 
   /**
@@ -153,6 +197,18 @@ class CSPViolationService {
   public clearViolations(): void {
     this.violations = [];
     this.logger?.debug('Cleared all CSP violations');
+
+    // Update CSP button when violations are cleared
+    const updateButton = (window as { updateCSPButton?: () => void }).updateCSPButton;
+    if (updateButton && typeof updateButton === 'function') {
+      setTimeout(() => {
+        try {
+          updateButton();
+        } catch (error) {
+          console.error('Error updating CSP button:', error);
+        }
+      }, 50);
+    }
   }
 
   /**
@@ -167,6 +223,20 @@ class CSPViolationService {
    */
   public isActive(): boolean {
     return this.isListening;
+  }
+
+  /**
+   * Temporarily pause violation handling (useful during DOM manipulation)
+   */
+  public pauseHandling(): void {
+    this.isHandlingViolation = true;
+  }
+
+  /**
+   * Resume violation handling
+   */
+  public resumeHandling(): void {
+    this.isHandlingViolation = false;
   }
 
   /**

@@ -81,7 +81,7 @@ export const createDevServerConfig = <TEnv extends Partial<TemplateEnv>>(
       headers: {
         'Content-Security-Policy': [
           "default-src 'self'",
-          "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Vite needs unsafe-eval for HMR
+          "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com", // Vite needs unsafe-eval for HMR
           "style-src 'self' 'unsafe-inline'", // Allow inline styles
           "img-src 'self' data: blob: https://*.equinor.com",
           "font-src 'self'",
@@ -90,6 +90,7 @@ export const createDevServerConfig = <TEnv extends Partial<TemplateEnv>>(
           "media-src 'self'",
           "object-src 'none'",
           "base-uri 'self'",
+          'worker-src blob:',
           "form-action 'self'",
         ].join('; '),
       },

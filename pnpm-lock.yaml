@@ -384,6 +384,13 @@ importers:
         version: 5.9.3
 
   cookbooks/app-react-csp:
+    dependencies:
+      jodit:
+        specifier: ^4.7.9
+        version: 4.7.9
+      jodit-react:
+        specifier: ^5.2.38
+        version: 5.2.38(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@equinor/fusion-framework-cli':
         specifier: workspace:^
@@ -7128,6 +7135,15 @@ packages:
   jest-worker@26.6.2:
     resolution: {integrity: sha512-KWYVV1c4i+jbMpaBC+U++4Va0cp8OisU185o73T1vo99hqi7w8tSJfUXYswwqqrjzwxa6KpRK54WhPvwf5w6PQ==}
     engines: {node: '>= 10.13.0'}
+
+  jodit-react@5.2.38:
+    resolution: {integrity: sha512-k98vjch0JWX13Dlf7tWv3wPo6dgO9bpi0NUBC6YrpGLYtRJx8d5Ttz5TLWuydEReedWWyNKobSGIGYQDihP8Vw==}
+    peerDependencies:
+      react: ~0.14 || ^15 || ^16 || ^17 || ^18 || ^19
+      react-dom: ~0.14 || ^15 || ^16 || ^17 || ^18 || ^19
+
+  jodit@4.7.9:
+    resolution: {integrity: sha512-dPlewnu2+vVXELh9BEJTNQoSBL3Cf2E0fNh30yjSEgUtJHYSUYToDjMDEqr0T/L9iNpqPTODy2b4pzyGpPRUog==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -17143,6 +17159,14 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 7.2.0
 
+  jodit-react@5.2.38(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      jodit: 4.7.9
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  jodit@4.7.9: {}
+
   js-tokens@4.0.0: {}
 
   js-tokens@9.0.1: {}
@@ -19487,7 +19511,7 @@ snapshots:
 
   vite@7.1.12(@types/node@24.6.2)(sass-embedded@1.93.2)(sass@1.93.2)(terser@5.44.0)(tsx@4.20.6):
     dependencies:
-      esbuild: 0.25.10
+      esbuild: 0.25.11
       fdir: 6.5.0(picomatch@4.0.3)
       picomatch: 4.0.3
       postcss: 8.5.6

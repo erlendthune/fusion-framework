@@ -22,5 +22,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "jodit": "^4.7.9",
+    "jodit-react": "^5.2.38"
   }
 }
