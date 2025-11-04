@@ -1,5 +1,6 @@
 import { tag } from '@equinor/eds-icons';
 import { Button, Icon, TopBar } from '@equinor/eds-core-react';
+import { CSPNotificationComponent } from './components/CSPNotificationComponent';
 
 import PersonAvatarElement from '@equinor/fusion-wc-person/avatar';
 PersonAvatarElement;
@@ -27,6 +28,7 @@ export const HeaderActions = (props: HeaderActionProps) => {
       >
         <Icon data={tag} />
       </Button>
+      <CSPNotificationComponent />
       <Button onClick={() => togglePerson((x) => !x)} variant="ghost_icon">
         <fwc-person-avatar size="small" azureId={userAzureId} clickable={false} />
       </Button>
